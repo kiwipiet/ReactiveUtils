@@ -147,7 +147,7 @@ namespace ReactiveUtils
             return Observable.Create<T>(o =>
             {
                 var paused = new SerialDisposable();
-                var subscription = Observable.Publish(source, ps =>
+                var subscription = source.Publish(ps =>
                 {
                     var values = new Subject<T>();
 
