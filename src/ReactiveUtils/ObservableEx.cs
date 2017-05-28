@@ -3,6 +3,7 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace ReactiveUtils
 {
@@ -119,7 +120,7 @@ namespace ReactiveUtils
         /// <summary>
         ///     Helper to log to the Console on subscribe
         /// </summary>
-        /// <see cref="http://www.zerobugbuild.com/?p=47" />
+        /// <see cref="http://www.zerobugbuild.com/?p=47"  />
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="key"></param>
@@ -137,6 +138,37 @@ namespace ReactiveUtils
                 return key + "\t" + notification;
 
             return notification.ToString();
+        }
+
+        public static IObservable<T> Pausable<T>(
+            this IObservable<T> source,
+            IObservable<bool> pauser)
+        {
+            return Observable.Create<T>(o =>
+            {
+                var paused = new SerialDisposable();
+                var subscription = Observable.Publish(source, ps =>
+                {
+                    var values = new Subject<T>();
+
+                    IObservable<T> Switcher(bool b)
+                    {
+                        if (b)
+                        {
+                            values.Dispose();
+                            values = new Subject<T>();
+                            paused.Disposable = ps.Subscribe(values);
+                            return Observable.Empty<T>();
+                        }
+                        return values.Concat(ps);
+                    }
+
+                    return pauser.StartWith(true).DistinctUntilChanged()
+                        .Select(Switcher)
+                        .Switch();
+                }).Subscribe(o);
+                return new CompositeDisposable(subscription, paused);
+            });
         }
     }
 }

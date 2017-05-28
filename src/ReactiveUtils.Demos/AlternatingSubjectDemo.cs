@@ -3,18 +3,15 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using Xunit;
 
-namespace ReactiveUtils.Tests
+namespace ReactiveUtils.Demos
 {
-    public class AlternatingSubjectTests
+    class AlternatingSubjectDemo
     {
         private readonly TimeSpan _targetElapsedTime = TimeSpan.FromSeconds(2);
 
-        [Fact]
-        public void Test1()
+        public void Run()
         {
-
             var alt = new AlternatingSubject();
             var grabs = alt.First;
             var releases = alt.Second;
@@ -29,12 +26,12 @@ namespace ReactiveUtils.Tests
 
             //the TakeUntils ensure that the timers stop ticking appropriately
             var decrements = from g in grabs
-                             from tick in Observable.Interval(_targetElapsedTime).TakeUntil(releases)
-                             select Unit.Default;
+                from tick in Observable.Interval(_targetElapsedTime).TakeUntil(releases)
+                select Unit.Default;
             //this TakeUnitl watches for either a grab or a gague full
             var increments = from r in releases
-                             from tick in Observable.Interval(_targetElapsedTime).TakeUntil(grabs.Merge(gagueFulls))
-                             select Unit.Default;
+                from tick in Observable.Interval(_targetElapsedTime).TakeUntil(grabs.Merge(gagueFulls))
+                select Unit.Default;
 
             //simulated values for testing, you may just have
             //these be properties on an INotifyPropertyChanged object
@@ -109,7 +106,7 @@ namespace ReactiveUtils.Tests
             do
             {
                 done = false;
-                dynamic key = Console.ReadKey();
+                var key = Console.ReadKey();
                 if (key.Key == ConsoleKey.G)
                 {
                     mouseDowns.OnNext(Unit.Default);
