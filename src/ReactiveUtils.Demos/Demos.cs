@@ -15,6 +15,12 @@ namespace ReactiveUtils.Demos
         {
             new AlternatingSubjectDemo().Run();
         }
+        [Verb]
+        [UsedImplicitly]
+        static void RetryWhen()
+        {
+            new RetryWhenDemo().Run();
+        }
 
         [Verb(IsDefault = true)]
         [UsedImplicitly]

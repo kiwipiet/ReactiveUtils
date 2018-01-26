@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ReactiveUtils.Demos": {
+      "commandName": "Project",
+      "commandLineArgs": "RetryWhen"
+    }
+  }
+}

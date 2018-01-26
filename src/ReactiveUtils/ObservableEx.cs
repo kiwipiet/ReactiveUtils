@@ -170,5 +170,24 @@ namespace ReactiveUtils
                 return new CompositeDisposable(subscription, paused);
             });
         }
+        public static IObservable<T> RetryWhen<T, U>(this IObservable<T> source,
+            Func<IObservable<Exception>, IObservable<U>> handler)
+        {
+            return Observable.Defer(() =>
+            {
+                var errorSignal = new Subject<Exception>();
+                var retrySignal = handler(errorSignal);
+                var sources = new BehaviorSubject<IObservable<T>>(source);
+
+                return Observable.Using(
+                        () => retrySignal.Select(s => source).Subscribe(sources),
+                        r => sources.Select(src =>
+                            src.Do(v => { }, e => errorSignal.OnNext(e), () => errorSignal.OnCompleted())
+                                .OnErrorResumeNext(Observable.Empty<T>())
+                        ).Concat()
+                    )
+                    ;
+            });
+        }
     }
 }
